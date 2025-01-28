@@ -1,0 +1,27 @@
+import numpy as np
+import matplotlib.pyplot as pl
+
+# task a - how to generate an array with non uniform range
+
+# create three arrays with different steps from -5 to -2, -2 to 3 and 3 to 5 
+Dx = 0.5
+x1 = np.arange(-5,-2+Dx,Dx)
+
+Dx = 0.05
+x2 = np.arange(-2+Dx,3,Dx)
+
+Dx = 0.5
+x3= np.arange(3,5+Dx,Dx)
+
+#  stack these linearly to create an array from -5 to 5
+x = np.hstack((x1,x2,x3))
+
+# f finds the sin value for each value of x 
+f =np.sin(x)
+# g finds the sin value for each value of x squared + pi
+g= np.sin(x**2+np.pi)
+
+#  plots f and g against x 
+pl.scatter(x,f,c='red',marker='d')
+pl.scatter(x,g,c='magenta',marker='o')
+pl.show()

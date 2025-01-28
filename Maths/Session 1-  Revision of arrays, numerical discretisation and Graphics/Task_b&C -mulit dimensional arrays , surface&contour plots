@@ -1,0 +1,51 @@
+# # -*- coding: utf-8 -*-
+import numpy as np
+import matplotlib.pyplot as pl
+from mpl_toolkits import mplot3d
+import plotly.graph_objects as go
+#task b-----------
+#  creata array with step dx for x axis
+Dx = 0.1
+x1 = np.arange(-2*np.pi,2*np.pi+Dx,Dx)
+
+# create array with step dx for y axis
+Dy = 0.1
+y1 = np.arange(-np.pi,2*np.pi+Dy,Dy)
+
+# form a 2 dimensional grid 
+(Xg, Yg) = np.meshgrid(x1,y1)
+print(Xg)
+f = np.sin(Xg)*np.cos(Yg)
+g = np.cos(Xg)*np.sin(Yg)
+
+s = f+g
+p = f*g
+print(p[10,10])
+
+# task c__
+
+
+# plot contour of p
+
+pl.contour(Xg, Yg, p)
+pl.title('Contour Plot of s')
+pl.xlabel('X axis')
+pl.ylabel('Y axis')
+pl.show()
+
+# create a 3d mesh grid
+t = np.arange(0,10.05,0.05)
+(Yg, Xg, Tg) = np.meshgrid(y1,x1,t)
+
+# evaluate r at each point in this mesh grid, it will be 3d too
+r = np.sin(Xg)*np.cos(Yg) * np.exp(-0.5*Tg)
+
+# surface plot of r's vlaue for t=0, r could be a temperature value for a point on a cube so when t = 0 this show temp at top layer
+ax = pl.axes(projection='3d')
+ax.plot_surface(Xg[:,:,0],Yg[:,:,0],r[:,:,0])
+pl.show()
+
+# surface plot of r's vlaue for t=5
+ax = pl.axes(projection='3d')
+ax.plot_surface(Xg[:,:,5],Yg[:,:,5],r[:,:,5])
+pl.show()
