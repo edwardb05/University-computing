@@ -8,7 +8,7 @@ A = np.array([[-4, 2, 0],
 b = np.array([-2, -44, 238])
 
 # Initial guess
-u = np.array([1000, 1000, 1000], dtype=float)  # Starting with [1000, 1000, 1000]
+u = np.array([0, 0,0], dtype=float)  # Starting with [1000, 1000, 1000] make sure to set as float
 
 # Stopping criterion
 tolerance = 1  # Relative error threshold (%)
