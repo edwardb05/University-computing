@@ -1,4 +1,6 @@
 import numpy as np
+# All formulas obtained from lab handout "M Thermo-Fluids Lab. – Internal Combustion Engine Performance"
+
 
 def find_air_mass_flow_rate(Clfm,dens_a,del_p):
     air_mfr = Clfm * dens_a*del_p
