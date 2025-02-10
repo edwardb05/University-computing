@@ -14,6 +14,8 @@ NLcurrent =0.07 #No load current in Amps
 Storque = 186e-3 #Stall torque in Nm e.g. this is 186mNm
 Scurrent = 3.82 #Stall current in amps
 
+
+
 ###Plotting code - don't change###
 
 # Evaluating the torque, speed, current all asumed linear equations
@@ -27,6 +29,11 @@ Pout = Speedvals*Torquevals #Power out, Speed x Torque
 
 efficiency = (Pout/(Vnom*Currentvals)) *100 #Efficiency P out / P in, P in is Volts x current
 
+##Accessing values
+# target_torque = 0.1  # Insert your target value in Nm
+# current_at_target_torque = np.interp(target_torque, Torquevals, Currentvals) #Finds your secondary value at the target value
+# print(current_at_target_torque)
+
 # Finding values at max efficiency
 max_eff_idx = np.argmax(efficiency)
 max_eff_torque = Torquevals[max_eff_idx]
@@ -37,8 +44,11 @@ max_eff_value = efficiency[max_eff_idx]
 
 # Plot
 fig, ax1 = plt.subplots()
+fig.subplots_adjust(left=0.045) 
+fig.subplots_adjust(right=0.83) 
 
 # First axis (Speed)
+
 ax1.set_xlabel("Torque (Nm)")
 ax1.set_ylabel("Speed (rad/s)", color="red")
 ax1.plot(Torquevals, Speedvals, color="red", label="Speed (rad/s)")
@@ -75,11 +85,7 @@ print(f"Speed at Max Efficiency: {max_eff_speed:.2f} rad/s")
 print(f"Current at Max Efficiency: {max_eff_current:.2f} A")
 print(f"Power at Max Efficiency: {max_eff_power:.2f} W")
 
-# Legends
-ax1.legend(loc="upper left")
-ax2.legend(loc="upper right")
-ax3.legend(loc="lower left")
-ax4.legend(loc="lower right")
+
 
 plt.title("Motor Performance Curves")
 plt.show()
