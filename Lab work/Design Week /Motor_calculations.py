@@ -7,7 +7,6 @@ Vnom = 20 #Nominal voltage
 # No load values
 
 NLspeedrpm = 3600 #No load speed in rpm
-NLspeed = (NLspeedrpm/60)*2*np.pi #Converts from RPM to rad/s
 NLcurrent =0.07 #No load current in Amps
 
 # Stall values
@@ -15,13 +14,15 @@ NLcurrent =0.07 #No load current in Amps
 Storque = 186e-3 #Stall torque in Nm e.g. this is 186mNm
 Scurrent = 3.82 #Stall current in amps
 
+###Plotting code - don't change###
 
-# Plotting the torque, speed, current all asumed linear equations
+# Evaluating the torque, speed, current all asumed linear equations
+NLspeed = (NLspeedrpm/60)*2*np.pi #Converts from RPM to rad/s
 Torquevals = np.linspace(0,Storque,1000) #Takes 1000 values of torque between 0 and max torque
 Speedvals = NLspeed + Torquevals*(0-NLspeed/Storque) #Gives a linear increas of speed vals between NLspeed and stall
 Currentvals =NLcurrent+ Torquevals*((Scurrent-NLcurrent)/Storque) #Gives current vals between NL current and stall
 
-# Plotting power and efficiency curves
+# Evaluating power and efficiency curves
 Pout = Speedvals*Torquevals #Power out, Speed x Torque
 
 efficiency = (Pout/(Vnom*Currentvals)) *100 #Efficiency P out / P in, P in is Volts x current
