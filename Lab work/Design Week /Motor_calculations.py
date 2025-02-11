@@ -3,7 +3,7 @@ import matplotlib.pyplot as plt
 import pandas as pd
 file_path = "motors.xlsx"  # Update with your actual file path
 df = pd.read_excel(file_path,header= 2)
-# Insert values for you motor - example values for RS-555PC-25110
+# Insert values for you motor
 
 for index , row in df.iterrows():
     model = row["MODEL"]
@@ -40,7 +40,6 @@ for index , row in df.iterrows():
     max_eff_current = Currentvals[max_eff_idx]
     max_eff_power = Pout[max_eff_idx]
     max_eff_value = efficiency[max_eff_idx]
-
     if max_eff_power >= 10:
        # Print values at max efficiency
         print(f"Max Efficiency: {max_eff_value:.2f}%")
