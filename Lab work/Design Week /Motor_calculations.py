@@ -1,39 +1,39 @@
 import numpy as np
 import matplotlib.pyplot as plt
 import pandas as pd
-file_path = "motors.xlsx"  # Update with your actual file path
+file_path = "Design Week /motors.xlsx"  # Update with your actual file path
 df = pd.read_excel(file_path,header= 2)
 # Insert values for you motor
 
 for index , row in df.iterrows():
     model = row["MODEL"]
     Vnom = row["V"]
-    
-    # Convert units
+        
+        # Convert units
     NLspeedrpm = row["r/min"]  
     NLcurrent = row["A"]
     Storque = row["mN・m"] / 1000  # Convert from mN·m to Nm
     Scurrent = row["B"]
-    
-    ###Plotting code - don't change###
+        
+        ###Plotting code - don't change###
 
-    # Evaluating the torque, speed, current all asumed linear equations
+        # Evaluating the torque, speed, current all asumed linear equations
     NLspeed = (NLspeedrpm/60)*2*np.pi #Converts from RPM to rad/s
     Torquevals = np.linspace(0,Storque,1000) #Takes 1000 values of torque between 0 and max torque
     Speedvals = NLspeed + Torquevals*(0-NLspeed/Storque) #Gives a linear increas of speed vals between NLspeed and stall
     Currentvals =NLcurrent+ Torquevals*((Scurrent-NLcurrent)/Storque) #Gives current vals between NL current and stall
 
-    # Evaluating power and efficiency curves
+        # Evaluating power and efficiency curves
     Pout = Speedvals*Torquevals #Power out, Speed x Torque
 
     efficiency = (Pout/(Vnom*Currentvals)) *100 #Efficiency P out / P in, P in is Volts x current
 
-    ##Accessing values
-    # target_torque = 0.1  # Insert your target value in Nm
-    # current_at_target_torque = np.interp(target_torque, Torquevals, Currentvals) #Finds your secondary value at the target value
-    # print(current_at_target_torque)
+        ##Accessing values
+        # target_torque = 0.1  # Insert your target value in Nm
+        # current_at_target_torque = np.interp(target_torque, Torquevals, Currentvals) #Finds your secondary value at the target value
+        # print(current_at_target_torque)
 
-    # Finding values at max efficiency
+        # Finding values at max efficiency
     max_eff_idx = np.argmax(efficiency)
     max_eff_torque = Torquevals[max_eff_idx]
     max_eff_speed = Speedvals[max_eff_idx]
