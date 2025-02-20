@@ -3,7 +3,7 @@ import pandas as pd
 import matplotlib.pyplot as plt
 from scipy.interpolate import Akima1DInterpolator
 
-file_path = "Charpy and Hardness Data 2025.xlsx"  # Update with actual file path
+file_path = "Charpy and Hardness Data 2025.xlsx" 
 
 def read_and_plot(material, color):
     df = pd.read_excel(file_path, sheet_name=material)
