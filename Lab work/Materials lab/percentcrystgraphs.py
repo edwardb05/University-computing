@@ -1,50 +1,44 @@
 import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
-from scipy.interpolate import Akima1DInterpolator
 
-file_path = "perc_crystallinity.xlsx"  # read the pecent crystanillty file
+file_path = "perc_crystallinity.xlsx"  # read the percent crystallinity file
 df = pd.read_excel(file_path)
 
-temperatures = df["Temp/°C"].values #Find the temp values
+temperatures = df["Temp/°C"].values  # Find the temp values
 
-# Function to plot each material 
-def plot_spline_trend(material_name, color):
+# Function to plot each material with point-to-point lines
+def plot_point_to_point(material_name, color):
     y_values = df[material_name].values
     
-    # Sort data to ensure its in correct order
+    # Sort data to ensure it’s in correct order
     sorted_indices = np.argsort(temperatures)
     temperatures_sorted = temperatures[sorted_indices]
     y_values_sorted = y_values[sorted_indices]
     
-    # Generate smooth x values
-    x_smooth = np.linspace(temperatures_sorted[0], temperatures_sorted[-1], 1000)
-    
-    # Create cubic spline interpolation
-    spline = Akima1DInterpolator(temperatures_sorted, y_values_sorted)
-    y_smooth = spline(x_smooth)
-    
     # Create a new figure 
     plt.figure(figsize=(8, 6))
     
-    # Plot curve and original points
-    plt.plot(x_smooth, y_smooth, label=material_name, color=color)
+    # Plot point-to-point line and original points
+    plt.plot(temperatures_sorted, y_values_sorted, label=material_name, color=color)  # Connect points directly
     plt.scatter(temperatures_sorted, y_values_sorted, color=color, marker='o')  # Original points
     
-    # Find the index where y_smooth is closest to 50
-    idx = np.argmin(np.abs(y_smooth - 50))  # Get index of closest value
-    intersection_temp = x_smooth[idx]       # Get corresponding x (temperature)
+    # Find the approximate temperature where the line crosses 50% (linear interpolation between points)
+    for i in range(len(y_values_sorted) - 1):
+        y1, y2 = y_values_sorted[i], y_values_sorted[i + 1]
+        x1, x2 = temperatures_sorted[i], temperatures_sorted[i + 1]
+        if (y1 < 50 and y2 > 50) or (y1 > 50 and y2 < 50):  # Check if 50% is crossed
+            # Linear interpolation to find exact crossing point
+            intersection_temp = x1 + (50 - y1) * (x2 - x1) / (y2 - y1)
+            plt.axvline(x=intersection_temp, color='black', linestyle='--', alpha=0.6)
+            plt.text(intersection_temp - 5, 52, f"{intersection_temp:.1f}°C", color='black', ha='right')
+            break  # Stop after finding the first crossing
     
-    # Check if the curve actually reaches 50%
-    if np.abs(y_smooth[idx] - 50) < 1:  # Only mark if it's very close to 50%
-        plt.axvline(x=intersection_temp, color='black', linestyle='--', alpha=0.6)
-        plt.text(intersection_temp-5, 52, f"{intersection_temp:.1f}°C", color='black', ha='right')#write text to the left of the curve
-        
     # Add horizontal line at 50% crystallinity
     plt.axhline(y=50, color='gray', linestyle='--', label="50% Crystallinity")
     
     # Formatting
-    plt.ylim(0,110)
+    plt.ylim(0, 110)
     plt.xlabel("Temperature (°C)")
     plt.ylabel("Cleavage Fracture Percentage")
     plt.title(f"Cleavage Fracture vs Temperature ({material_name})")
@@ -65,5 +59,4 @@ matcol = [
 
 # Plot each material in its own separate figure
 for material, color in matcol:
-    plot_spline_trend(material, color)
-
+    plot_point_to_point(material, color)
