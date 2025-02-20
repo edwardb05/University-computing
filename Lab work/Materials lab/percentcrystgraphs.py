@@ -18,7 +18,7 @@ def plot_spline_trend(material_name, color):
     y_values_sorted = y_values[sorted_indices]
     
     # Generate smooth x values
-    x_smooth = np.linspace(temperatures_sorted.min(), temperatures_sorted.max(), 1000)
+    x_smooth = np.linspace(temperatures_sorted[0], temperatures_sorted[-1], 1000)
     
     # Create cubic spline interpolation
     spline = Akima1DInterpolator(temperatures_sorted, y_values_sorted)
@@ -39,11 +39,12 @@ def plot_spline_trend(material_name, color):
     if np.abs(y_smooth[idx] - 50) < 1:  # Only mark if it's very close to 50%
         plt.axvline(x=intersection_temp, color='black', linestyle='--', alpha=0.6)
         plt.text(intersection_temp-5, 52, f"{intersection_temp:.1f}°C", color='black', ha='right')#write text to the left of the curve
-
+        
     # Add horizontal line at 50% crystallinity
     plt.axhline(y=50, color='gray', linestyle='--', label="50% Crystallinity")
     
     # Formatting
+    plt.ylim(0,110)
     plt.xlabel("Temperature (°C)")
     plt.ylabel("Cleavage Fracture Percentage")
     plt.title(f"Cleavage Fracture vs Temperature ({material_name})")
