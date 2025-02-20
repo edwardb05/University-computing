@@ -1,6 +1,7 @@
 import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
+from scipy.interpolate import Akima1DInterpolator
 
 file_path = "Charpy and Hardness Data 2025.xlsx"  # Update with actual file path
 
@@ -21,33 +22,59 @@ def read_and_plot(material, color):
     energy_sorted = energy_mean[sorted_indices]
     energy_std_sorted = energy_std[sorted_indices]
 
-    # Compute the gradient (first derivative) using differences between points
-    gradient = np.diff(energy_sorted) / np.diff(temperatures_sorted)
-    gradient = np.append(gradient, gradient[-1])  # Extend to match length
+    # Generate smooth curve for gradient calculation
+    x_smooth = np.linspace(temperatures_sorted.min(), temperatures_sorted.max(), 1000)
+    spline = Akima1DInterpolator(temperatures_sorted, energy_sorted)
+    y_smooth = spline(x_smooth)
 
-    # Define a threshold for a "flat" region
-    flat_threshold = np.max(np.abs(gradient)) * 0.12  # 12% of max gradient
+    # Compute the gradient from the smooth curve
+    gradient = np.gradient(y_smooth, x_smooth)
 
-    # Identify indices where gradient is small (shelves)
+    # Define a stricter threshold for a "flat" region
+    flat_threshold = np.max(np.abs(gradient)) * 0.08  # 8% of max gradient
+
+    # Identify flat regions in the smooth curve
     flat_indices = np.where(np.abs(gradient) < flat_threshold)[0]
 
-    # Define lower shelf: average energy of initial flat region
-    lower_shelf_end_idx = flat_indices[flat_indices < len(temperatures_sorted) // 2][-1] if len(flat_indices) > 0 else 0
+    # Map flat indices back to original data points
+    x_smooth_to_data = np.interp(x_smooth[flat_indices], temperatures_sorted, np.arange(len(temperatures_sorted)))
+    flat_data_indices = np.unique(np.round(x_smooth_to_data).astype(int))
+
+    # Define lower shelf: Find the end by detecting a significant energy jump
+    energy_jump_threshold = np.max(np.diff(y_smooth)) * 0.3  # 30% of max energy jump
+    lower_shelf_end_idx = None
+    for i in range(len(flat_data_indices) - 1):
+        idx1, idx2 = flat_data_indices[i], flat_data_indices[i + 1]
+        if idx2 - idx1 > 1:  # Check for a gap in flat indices (start of transition)
+            energy_diff = energy_sorted[idx2] - energy_sorted[idx1]
+            if energy_diff > energy_jump_threshold:
+                lower_shelf_end_idx = idx1
+                break
+    if lower_shelf_end_idx is None:
+        lower_shelf_end_idx = flat_data_indices[0] if len(flat_data_indices) > 0 else 0  # Default to first flat point
+
     lower_shelf = np.mean(energy_sorted[:lower_shelf_end_idx + 1])
     lower_shelf_end_temp = temperatures_sorted[lower_shelf_end_idx]
 
-    # Define upper shelf: average energy of final flat region
-    upper_shelf_start_idx = flat_indices[flat_indices > len(temperatures_sorted) // 2][0] if len(flat_indices) > len(temperatures_sorted) // 2 else -1
+    # Define upper shelf: Start after the largest energy jump
+    upper_shelf_start_idx = None
+    max_jump = 0
+    for i in range(len(energy_sorted) - 1):
+        jump = energy_sorted[i + 1] - energy_sorted[i]
+        if jump > max_jump and i > lower_shelf_end_idx:
+            max_jump = jump
+            upper_shelf_start_idx = i + 1
+    if upper_shelf_start_idx is None:
+        upper_shelf_start_idx = len(energy_sorted) - 1  # Default to last point
+
     upper_shelf = np.mean(energy_sorted[upper_shelf_start_idx:])
     upper_shelf_start_temp = temperatures_sorted[upper_shelf_start_idx]
 
     # Define DBTT: Midpoint energy between shelves
     dbtt_energy = (lower_shelf + upper_shelf) / 2
 
-    # Find transition points for the connecting line
-    # Lower shelf ends at NDT (end of lower flat region)
+    # Define transition points for the connecting line
     ndt_temp = lower_shelf_end_temp
-    # Upper shelf starts where energy approaches upper shelf level (simplified)
     transition_start_temp = ndt_temp
     transition_end_temp = upper_shelf_start_temp
 
@@ -75,7 +102,7 @@ def read_and_plot(material, color):
     plt.text(dbtt_temp + 10, dbtt_energy + 5, f"DBTT: {dbtt_temp:.1f}°C", color='black', ha='right', fontsize=10, fontweight='bold')
 
     # Formatting
-    plt.ylim((0, 200))
+    plt.ylim(0,200)
     plt.xlabel("Temperature (°C)")
     plt.ylabel("Energy (J)")
     plt.title(f"Ductile to Brittle Transition Temperature ({material})")
