@@ -1,20 +1,25 @@
+import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
-import matplotlib.pyplot as plt
 from scipy.interpolate import Akima1DInterpolator
 
-file_path = "Charpy and Hardness Data 2025.xlsx" 
+file_path = "Charpy and Hardness Data 2025.xlsx"
+
 
 def read_and_plot(material, color):
     df = pd.read_excel(file_path, sheet_name=material)
 
     # Group by temperature: Calculate mean and standard deviation
-    df_grouped = df.groupby("Temperature (°C)").agg({"Energy (J)": ["mean", "std"]}).reset_index()
+    df_grouped = (
+        df.groupby("Temperature (°C)")
+        .agg({"Energy (J)": ["mean", "std"]})
+        .reset_index()
+    )
     df_grouped.columns = ["Temperature (°C)", "Energy (J)", "Energy Std"]
-    
+
     temperatures = df_grouped["Temperature (°C)"].values
     energy_mean = df_grouped["Energy (J)"].values
-    energy_std = df_grouped["Energy Std"].fillna(0).values  
+    energy_std = df_grouped["Energy Std"].fillna(0).values
 
     # Sort data by temperature
     sorted_indices = np.argsort(temperatures)
@@ -37,7 +42,9 @@ def read_and_plot(material, color):
     flat_indices = np.where(np.abs(gradient) < flat_threshold)[0]
 
     # Map flat indices back to original data points
-    x_smooth_to_data = np.interp(x_smooth[flat_indices], temperatures_sorted, np.arange(len(temperatures_sorted)))
+    x_smooth_to_data = np.interp(
+        x_smooth[flat_indices], temperatures_sorted, np.arange(len(temperatures_sorted))
+    )
     flat_data_indices = np.unique(np.round(x_smooth_to_data).astype(int))
 
     # Define lower shelf: Find the end by detecting a significant energy jump
@@ -51,9 +58,11 @@ def read_and_plot(material, color):
                 lower_shelf_end_idx = idx1
                 break
     if lower_shelf_end_idx is None:
-        lower_shelf_end_idx = flat_data_indices[0] if len(flat_data_indices) > 0 else 0  # Default to first flat point
+        lower_shelf_end_idx = (
+            flat_data_indices[0] if len(flat_data_indices) > 0 else 0
+        )  # Default to first flat point
 
-    lower_shelf = np.mean(energy_sorted[:lower_shelf_end_idx + 1])
+    lower_shelf = np.mean(energy_sorted[: lower_shelf_end_idx + 1])
     lower_shelf_end_temp = temperatures_sorted[lower_shelf_end_idx]
 
     # Define upper shelf: Start after the largest energy jump
@@ -80,34 +89,82 @@ def read_and_plot(material, color):
 
     # Plot lower shelf as a solid horizontal line
     lower_shelf_x = temperatures_sorted[temperatures_sorted <= ndt_temp]
-    plt.plot(lower_shelf_x, [lower_shelf] * len(lower_shelf_x), color=color, linestyle='-', linewidth=2, label="Lower Shelf")
+    plt.plot(
+        lower_shelf_x,
+        [lower_shelf] * len(lower_shelf_x),
+        color=color,
+        linestyle="-",
+        linewidth=2,
+        label="Lower Shelf",
+    )
 
     # Plot transition line connecting lower shelf to upper shelf
-    plt.plot([transition_start_temp, transition_end_temp], [lower_shelf, upper_shelf], color=color, linestyle='-', linewidth=2, label="Transition")
+    plt.plot(
+        [transition_start_temp, transition_end_temp],
+        [lower_shelf, upper_shelf],
+        color=color,
+        linestyle="-",
+        linewidth=2,
+        label="Transition",
+    )
 
     # Plot upper shelf as a solid horizontal line
     upper_shelf_x = temperatures_sorted[temperatures_sorted >= transition_end_temp]
-    plt.plot(upper_shelf_x, [upper_shelf] * len(upper_shelf_x), color=color, linestyle='-', linewidth=2, label="Upper Shelf")
+    plt.plot(
+        upper_shelf_x,
+        [upper_shelf] * len(upper_shelf_x),
+        color=color,
+        linestyle="-",
+        linewidth=2,
+        label="Upper Shelf",
+    )
 
     # Plot original data with error bars
-    plt.errorbar(temperatures_sorted, energy_sorted, yerr=energy_std_sorted, fmt='o', color=color, capsize=5, label="Data ± Std Dev")
+    plt.errorbar(
+        temperatures_sorted,
+        energy_sorted,
+        yerr=energy_std_sorted,
+        fmt="o",
+        color=color,
+        capsize=5,
+        label="Data ± Std Dev",
+    )
 
     # Mark NDT (end of lower shelf) with a vertical line
-    plt.axvline(x=ndt_temp, color='orange', linestyle='--', alpha=0.6)
-    plt.text(ndt_temp - 4, lower_shelf + 15, f"NDT: {ndt_temp:.1f}°C", color='orange', ha='right', fontsize=10, fontweight='bold')
+    plt.axvline(x=ndt_temp, color="orange", linestyle="--", alpha=0.6)
+    plt.text(
+        ndt_temp - 4,
+        lower_shelf + 15,
+        f"NDT: {ndt_temp:.1f}°C",
+        color="orange",
+        ha="right",
+        fontsize=10,
+        fontweight="bold",
+    )
 
     # Mark DBTT: Temperature where transition line crosses dbtt_energy
-    dbtt_temp = transition_start_temp + (dbtt_energy - lower_shelf) * (transition_end_temp - transition_start_temp) / (upper_shelf - lower_shelf)
-    plt.axvline(x=dbtt_temp, color='black', linestyle='--', alpha=0.6)
-    plt.text(dbtt_temp + 10, dbtt_energy + 5, f"DBTT: {dbtt_temp:.1f}°C", color='black', ha='right', fontsize=10, fontweight='bold')
+    dbtt_temp = transition_start_temp + (dbtt_energy - lower_shelf) * (
+        transition_end_temp - transition_start_temp
+    ) / (upper_shelf - lower_shelf)
+    plt.axvline(x=dbtt_temp, color="black", linestyle="--", alpha=0.6)
+    plt.text(
+        dbtt_temp + 10,
+        dbtt_energy + 5,
+        f"DBTT: {dbtt_temp:.1f}°C",
+        color="black",
+        ha="right",
+        fontsize=10,
+        fontweight="bold",
+    )
 
     # Formatting
-    plt.ylim(0,200)
+    plt.ylim(0, 200)
     plt.xlabel("Temperature (°C)")
     plt.ylabel("Energy (J)")
     plt.title(f"Ductile to Brittle Transition Temperature ({material})")
     plt.legend()
     plt.grid(True)
+
 
 # Define materials and colors
 matcol = [
@@ -115,7 +172,7 @@ matcol = [
     ("Annealed  Steel", "red"),
     ("Normalised Steel", "green"),
     ("Zinc", "purple"),
-    ("Aluminium", "black")
+    ("Aluminium", "black"),
 ]
 
 # Plot each material separately
