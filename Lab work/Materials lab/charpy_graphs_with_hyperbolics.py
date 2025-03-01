@@ -85,14 +85,14 @@ def read_and_plot(material, color):
 
     # Plot lower shelf as a solid horizontal line
     lower_shelf_x = temperatures_sorted[temperatures_sorted <= ndt_temp]
-    plt.plot(lower_shelf_x, [lower_shelf] * len(lower_shelf_x), color=color, linestyle='-', linewidth=2, label="Lower Shelf")
+    plt.plot(lower_shelf_x, [lower_shelf] * len(lower_shelf_x), color=color, linestyle='-', linewidth=2,)
 
     # Plot transition line connecting lower shelf to upper shelf
-    plt.plot([transition_start_temp, transition_end_temp], [lower_shelf, upper_shelf], color=color, linestyle='-', linewidth=2, label="Transition")
+    plt.plot([transition_start_temp, transition_end_temp], [lower_shelf, upper_shelf], color=color, linestyle='-', linewidth=2, )
 
     # Plot upper shelf as a solid horizontal line
     upper_shelf_x = temperatures_sorted[temperatures_sorted >= transition_end_temp]
-    plt.plot(upper_shelf_x, [upper_shelf] * len(upper_shelf_x), color=color, linestyle='-', linewidth=2, label="Upper Shelf")
+    plt.plot(upper_shelf_x, [upper_shelf] * len(upper_shelf_x), color=color, linestyle='-', linewidth=2, )
 
     # Plot original data with error bars
     plt.errorbar(temperatures_sorted, energy_sorted, yerr=energy_std_sorted, fmt='o', color=color, capsize=5, label="Data ± Std Dev")
@@ -109,7 +109,7 @@ def read_and_plot(material, color):
 
     #Plotting hyperbolic
     y_hyperbolic = hyperbolic(lower_shelf,upper_shelf,dbtt_temp, ((-lower_shelf+ upper_shelf)/(-transition_start_temp+ transition_end_temp )), x_smooth)
-    plt.plot(x_smooth,y_hyperbolic, linestyle = '--', color = 'blue', label="Hyperbolic approximation")
+    plt.plot(x_smooth,y_hyperbolic, linestyle = '--', color = 'green', label="Hyperbolic approximation")
     # Formatting
 
     plt.xlabel("Temperature (°C)")

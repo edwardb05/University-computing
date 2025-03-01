@@ -27,6 +27,8 @@ def read_and_plot(material, color):
     energy_sorted = energy_mean[sorted_indices]
     energy_std_sorted = energy_std[sorted_indices]
 
+
+
     # Generate smooth curve for gradient calculation
     x_smooth = np.linspace(temperatures_sorted.min(), temperatures_sorted.max(), 1000)
     spline = Akima1DInterpolator(temperatures_sorted, energy_sorted)
@@ -37,7 +39,6 @@ def read_and_plot(material, color):
 
     # Define a stricter threshold for a "flat" region
     flat_threshold = np.max(np.abs(gradient)) * 0.08  # 8% of max gradient
-
     # Identify flat regions in the smooth curve
     flat_indices = np.where(np.abs(gradient) < flat_threshold)[0]
 
@@ -95,7 +96,6 @@ def read_and_plot(material, color):
         color=color,
         linestyle="-",
         linewidth=2,
-        label="Lower Shelf",
     )
 
     # Plot transition line connecting lower shelf to upper shelf
@@ -105,7 +105,6 @@ def read_and_plot(material, color):
         color=color,
         linestyle="-",
         linewidth=2,
-        label="Transition",
     )
 
     # Plot upper shelf as a solid horizontal line
@@ -116,8 +115,7 @@ def read_and_plot(material, color):
         color=color,
         linestyle="-",
         linewidth=2,
-        label="Upper Shelf",
-    )
+        )
 
     # Plot original data with error bars
     plt.errorbar(
@@ -130,35 +128,38 @@ def read_and_plot(material, color):
         label="Data ± Std Dev",
     )
 
-    # Mark NDT (end of lower shelf) with a vertical line
-    plt.axvline(x=ndt_temp, color="orange", linestyle="--", alpha=0.6)
-    plt.text(
-        ndt_temp - 4,
-        lower_shelf + 15,
-        f"NDT: {ndt_temp:.1f}°C",
-        color="orange",
-        ha="right",
-        fontsize=10,
-        fontweight="bold",
-    )
+    # # Mark NDT (end of lower shelf) with a vertical line
+    # plt.axvline(x=ndt_temp, color="orange", linestyle="--", alpha=0.6)
+    # plt.text(
+    #     ndt_temp - 4,
+    #     lower_shelf + 15,
+    #     f"NDT: {ndt_temp:.1f}°C",
+    #     color="orange",
+    #     ha="right",
+    #     fontsize=10,
+    #     fontweight="bold",
+    # )
 
     # Mark DBTT: Temperature where transition line crosses dbtt_energy
-    dbtt_temp = transition_start_temp + (dbtt_energy - lower_shelf) * (
-        transition_end_temp - transition_start_temp
-    ) / (upper_shelf - lower_shelf)
-    plt.axvline(x=dbtt_temp, color="black", linestyle="--", alpha=0.6)
-    plt.text(
-        dbtt_temp + 10,
-        dbtt_energy + 5,
-        f"DBTT: {dbtt_temp:.1f}°C",
-        color="black",
-        ha="right",
-        fontsize=10,
-        fontweight="bold",
-    )
+    # dbtt_temp = transition_start_temp + (dbtt_energy - lower_shelf) * (
+    #     transition_end_temp - transition_start_temp
+    # ) / (upper_shelf - lower_shelf)
+    # plt.axvline(x=dbtt_temp, color="black", linestyle="--", alpha=0.6)
+    # plt.text(
+    #     dbtt_temp + 85,
+    #     dbtt_energy + 5,
+    #     f"DBTT: {dbtt_temp:.1f}°C",
+    #     color="black",
+    #     ha="right",
+    #     fontsize=10,
+    #     fontweight="bold",
+    # )
 
     # Formatting
     plt.ylim(0, 200)
+    plt.xlim(-220, ) 
+    # plt.plot([-220, dbtt_temp], [dbtt_energy, dbtt_energy], color='gray', linestyle='--')
+
     plt.xlabel("Temperature (°C)")
     plt.ylabel("Energy (J)")
     plt.title(f"Ductile to Brittle Transition Temperature ({material})")
