@@ -1,70 +1,72 @@
 import numpy as np
-import pandas as pd
-from scipy.linalg import solve_banded
+
 import matplotlib.pyplot as plt
 
-def crank_nicolson_wave(L=1.0, Nx=10, T=2.0, Nt=11, c=1.0, ):
-    dx = L / (Nx - 1)  # Space step
+# defining the implicit method for solving wave equation
+def crank_nicolson_wave(L=1.0, Nx=10, T=2.0, Nt=11, c=1.0, width=0.01,depth = 1) :
+    dx = L / (Nx - 1)  # Length step
     dt = T / (Nt - 1)  # Time step
     r = (c * dt / dx) ** 2  # CFL condition
     print(r)
-    x = np.linspace(0, L, Nx)  # Spatial grid
+    x = np.linspace(0, L, Nx)  # Length of wave domain
     u = np.zeros((Nx, Nt))  # Solution matrix
     
-    # Initial condition: cos(pi * x)
+    
+    # Set Gaussian pulse initial conditions
+    u[:, 0] = A * np.exp(-((x - 0)/2)**2 / (2 * width**2))
+    
+    # First time step using  explicit approach setting g(x) to 0 as no initial speed
+    u[1:-1, 1] = u[1:-1, 0] + (r / 2) * (u[:-2, 0] - 2 * u[1:-1, 0] + u[2:, 0])
+    
+    # Solving for each time, setting up tridiag matrix
+    A = np.zeros((Nx-2, Nx-2))  #Init matrix excluding BC
+    np.fill_diagonal(A, (1+r))  #Fill Main diag
+    np.fill_diagonal(A[:-1, 1:], -r/2)  #Fill upper and lower diag
+    np.fill_diagonal(A[1:, :-1], -r/2)  
+    
 
-    u[:, 0] = np.exp(-((x - L / 2) ** 2) / 0.01)
-    
-    # First time step using an explicit approach
-    u[1:-1, 1] = 0.5 * (u[2:, 0] + u[:-2, 0])
-    
-    # Tridiagonal matrix setup
-    lower_diag = -1* np.ones(Nx - 3)   # Lower diagonal
-    main_diag = 4 * np.ones(Nx - 2)   # Main diagonal
-    upper_diag = -1 * np.ones(Nx - 3)   # Upper diagonal
-
-    ab = np.zeros((3, Nx - 2))  # Band matrix for solve_banded()
-    ab[0, 1:] = upper_diag  # Upper diagonal
-    ab[1, :] = main_diag    # Main diagonal
-    ab[2, :-1] = lower_diag  # Lower diagonal
-    
     # Time stepping
-    for n in range(1, Nt - 1):
-        # Right-hand side (known values from previous time steps)
-        b = (1 - r) * u[1:-1, n] + (r / 2) * (u[2:, n] + u[:-2, n]) - u[1:-1, n-1]
+    for j in range(1, Nt - 1):
+        # b is RHS matrix for non BC, calulated from previous time steps
+        b = np.zeros(Nx-2)
+        #b iniitial and final values are different to bc
+        b[0]= r/2 * u[0,j+1] + r/2*(u[2,j]+u[0,j]) + (2+r)*(u[1,j])+u[1,j-1]
+        b[Nx-3]= r/2 * u[Nx-1,j+1] + r/2*(u[Nx-3,j]+u[Nx-1,j]) + (2+r)*(u[Nx-2,j])+u[Nx-2,j-1]
+
+        #b values for the rest of the matrix
+        for i in range(1,Nx-3):
+            b[i]= r/2*(u[i+2,j]+u[i,j]) + (2+r)*(u[i+1,j])+u[i+1,j-1]
         
-        # Solve tridiagonal system for u at time n+1
-        u[1:-1, n+1] = solve_banded((1, 1), ab, b)
         
-        # Neumann boundary conditions (zero derivative at boundaries)
-        u[0, n+1] = u[1, n+1]
-        u[-1, n+1] = u[-2, n+1]
+        # Solve tridiagonal system for u at time n
+        u[1:-1, j+1] = np.linalg.inv(A).dot(b)
+    return u
     
-    # Convert results to DataFrame
-    times = [f"{t:.1f}s" for t in np.linspace(0, T, Nt)]
-    df = pd.DataFrame(u, columns=times)
-    df["x"] = x  # Add spatial coordinate
+
+# Defining the explicit method for solving wave equation
+def explicit_wave_method(L=1.0, Nx=10, T=2.0, Nt=11, c=1.0, width=0.01,depth = 1):
+    dx = L / (Nx - 1)  # Length step
+    dt = T / (Nt - 1)  # Time step
+    r = (c * dt / dx) ** 2  # CFL condition
+    print(r)
+    x = np.linspace(0, L, Nx)  # Length of wave domain
+    u = np.zeros((Nx, Nt))  # Solution matrix
     
-    return df
-
-# Run the simulation
-df_wave = crank_nicolson_wave()
-
-# Display results
-print("Wave Equation (Crank-Nicolson) Solution:")
-print(df_wave)
-
-# Plot the wave evolution
-def plot_wave(df):
-    plt.figure(figsize=(8, 5))
-    for col in df.columns[:-1]:  # Skip the last column (x-coordinates)
-        plt.plot(df["x"], df[col], label=col)
     
-    plt.xlabel("x")
-    plt.ylabel("u(x, t)")
-    plt.title("Crank-Nicolson Wave Equation Evolution")
-    plt.legend()
-    plt.show()
+    # Set Gaussian pulse initial conditions
+    u[:, 0] = A * np.exp(-((x - 0)/2)**2 / (2 * width**2))
+    
+    # First time step using  explicit approach setting g(x) to 0 as no initial speed
+    u[1:-1, 1] = u[1:-1, 0] + (r / 2) * (u[:-2, 0] - 2 * u[1:-1, 0] + u[2:, 0])
 
-# Plot the wave motion
-plot_wave(df_wave)
+    # Time stepping loop, simplified as r = 1 
+    for j in range(1, Nt - 1):
+        for i in range(1, Nx - 1):
+            u[i, j+1] =  (r / 2) * (u[i+1, j] - 2 * u[i, j] + u[i-1, j])+2*u[i, j] - u[i, j-1]
+    return u
+
+class insect:
+    def __init__(self,weight, width, speed) -> None:
+        self.width = width
+        self.KE = 0.5*weight*speed**2
+
