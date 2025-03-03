@@ -60,3 +60,4 @@ matcol = [
 # Plot each material in its own separate figure
 for material, color in matcol:
     plot_point_to_point(material, color)
+
