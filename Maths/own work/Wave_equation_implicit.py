@@ -1,5 +1,4 @@
 import numpy as np
-
 import matplotlib.pyplot as plt
 
 # defining the implicit method for solving wave equation
@@ -68,5 +67,7 @@ def explicit_wave_method(L=1.0, Nx=10, T=2.0, Nt=11, c=1.0, width=0.01,depth = 1
 class insect:
     def __init__(self,weight, width, speed) -> None:
         self.width = width
+        self.weight = weight
+        self.speed = speed
         self.KE = 0.5*weight*speed**2
 
