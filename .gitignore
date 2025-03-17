@@ -4,3 +4,6 @@
 # Ignore all JPEG files (both .jpg and .jpeg extensions)
 *.jpg
 *.jpeg
+
+# Ignore all .env files
+*.env
