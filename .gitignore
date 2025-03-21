@@ -5,5 +5,7 @@
 *.jpg
 *.jpeg
 
+# Ignore all word files
+*.docx
 # Ignore all .env files
 *.env
