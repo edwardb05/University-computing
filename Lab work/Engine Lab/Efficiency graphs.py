@@ -11,8 +11,8 @@ def clean_data(file_path):
     data.columns = data.columns.str.strip()  # Remove extra spaces
     return data.apply(pd.to_numeric, errors='coerce')
 
-diesel_data = clean_data("Diesel_data.csv")
-petrol_data = clean_data("Petrol_data.csv")
+diesel_data = clean_data("Lab work/Engine Lab/Diesel_data.csv")
+petrol_data = clean_data("Lab work/Engine Lab/Petrol_data.csv")
 
 # Constants
 gamma = 1.4
