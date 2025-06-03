@@ -4,14 +4,14 @@ def func1(t):
     return y
     
 def DFT(yn):
-    N= len(yn)
-    FT = np.zeros(N)
+    # y: values of the function, in time domain
+    N = len(yn)
+    w = 2*np.pi/N
+    FTk = np.zeros(N,dtype=complex)
     for k in range(0,N):
-        FTk =0
         for n in range(0,N):
-            FTk+= yn[n]*np.exp((-2*np.pi*1j*k*n)/N)
-        FT[k] = FTk
-    return FT
+            FTk[k] += np.exp(-1j*k*w*n)*yn[n]
+    return FTk
 
 
 # 

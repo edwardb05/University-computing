@@ -13,11 +13,28 @@ def openfile(file):
             numbers.append(number)
     return (numbers)
 
+# Multiple plots
+# plot all the interpolations together
+pl.plot(xi,yeven,'r')
+pl.plot(xi,yodd,'b')
+pl.plot(xi,yall,'g')
+pl.legend(['Even','Odd','All'])
+pl.grid()
+pl.show()
 
-
+# Plotting curve
 pl.plot(xvalues,yvalues,c='Red')
 pl.grid()
 pl.show()
+
+
+# Plotting points
+pl.scatter(t,yi)
+pl.xlabel('t (s)',fontsize=20)
+pl.ylabel('yi',fontsize=20)
+pl.grid()
+pl.show()
+
 
 xn = linspace()
 
@@ -138,3 +155,13 @@ def MyGauss(A,b):
             x[i] = x[i] - A[i,k] * x[k] / A[i,i]
 
     return x
+
+def DFT(yn):
+    # y: values of the function, in time domain
+    N = len(yn)
+    w = 2*np.pi/N
+    FTk = np.zeros(N,dtype=complex)
+    for k in range(0,N):
+        for n in range(0,N):
+            FTk[k] += np.exp(-1j*k*w*n)*yn[n]
+    return FTk
